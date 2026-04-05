@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resume Category Predictor</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 760px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    header .icon {
+      font-size: 56px;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      margin-top: 8px;
+      color: #94a3b8;
+      font-size: 0.95rem;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 28px;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      color: #fff;
+    }
+
+    /* Card */
+    .card {
+      background: #1e293b;
+      border-radius: 16px;
+      padding: 32px;
+      border: 1px solid #334155;
+    }
+
+    /* Upload area */
+    .upload-area {
+      border: 2px dashed #334155;
+      border-radius: 12px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      position: relative;
+    }
+
+    .upload-area:hover, .upload-area.drag-over {
+      border-color: #38bdf8;
+      background: rgba(56,189,248,0.05);
+    }
+
+    .upload-area input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .upload-icon { font-size: 48px; display: block; margin-bottom: 16px; }
+
+    .upload-area h3 { color: #e2e8f0; margin-bottom: 6px; }
+
+    .upload-area p { color: #64748b; font-size: 0.85rem; }
+
+    .file-types {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 16px;
+    }
+
+    .badge {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* File selected state */
+    .file-selected {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      background: rgba(56,189,248,0.08);
+      border: 1px solid rgba(56,189,248,0.3);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-top: 16px;
+    }
+
+    .file-selected.show { display: flex; }
+    .file-selected .file-icon { font-size: 28px; }
+    .file-selected .file-info { flex: 1; }
+    .file-selected .file-name { font-weight: 600; color: #e2e8f0; font-size: 0.9rem; }
+    .file-selected .file-size { color: #64748b; font-size: 0.8rem; }
+    .remove-btn {
+      background: none;
+      border: none;
+      color: #64748b;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px;
+    }
+    .remove-btn:hover { color: #f87171; }
+
+    /* Textarea */
+    textarea {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      color: #e2e8f0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      padding: 16px;
+      resize: vertical;
+      min-height: 220px;
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus { border-color: #38bdf8; }
+    textarea::placeholder { color: #475569; }
+
+    /* Predict Button */
+    .predict-btn {
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      letter-spacing: 0.3px;
+    }
+
+    .predict-btn:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .predict-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Loading */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 24px;
+      color: #94a3b8;
+    }
+
+    .loading.show { display: block; }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid #334155;
+      border-top-color: #38bdf8;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Result */
+    .result {
+      display: none;
+      margin-top: 24px;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .result.show { display: block; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: linear-gradient(135deg, rgba(56,189,248,0.12), rgba(129,140,248,0.12));
+      border: 1px solid rgba(56,189,248,0.3);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 16px;
+    }
+
+    .result-icon { font-size: 40px; }
+    .result-label { font-size: 0.8rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+    .result-category {
+      font-size: 1.6rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .preview-box {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .preview-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+
+    .preview-text {
+      font-size: 0.82rem;
+      color: #64748b;
+      line-height: 1.7;
+    }
+
+    /* Error */
+    .error-box {
+      display: none;
+      background: rgba(248,113,113,0.1);
+      border: 1px solid rgba(248,113,113,0.3);
+      border-radius: 10px;
+      padding: 16px 20px;
+      color: #fca5a5;
+      margin-top: 16px;
+      font-size: 0.9rem;
+    }
+
+    .error-box.show { display: block; }
+
+    /* Categories list */
+    .categories-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .cat-chip {
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+    }
+
+    footer {
+      margin-top: 40px;
+      color: #334155;
+      font-size: 0.8rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <header>
+      <span class="icon">📄</span>
+      <h1>Resume Category Predictor</h1>
+      <p>Upload a resume in PDF, DOCX, or TXT — get the predicted job category instantly.</p>
+    </header>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('file')">📁 Upload File</button>
+      <button class="tab-btn" onclick="switchTab('text')">✏️ Paste Text</button>
+      <button class="tab-btn" onclick="switchTab('categories')">📋 All Categories</button>
+    </div>
+
+    <!-- FILE UPLOAD TAB -->
+    <div id="tab-file" class="card">
+      <div class="upload-area" id="dropzone"
+           ondragover="event.preventDefault(); this.classList.add('drag-over')"
+           ondragleave="this.classList.remove('drag-over')"
+           ondrop="handleDrop(event)">
+        <input type="file" id="fileInput" accept=".pdf,.docx,.txt" onchange="onFileChange(this)" />
+        <span class="upload-icon">☁️</span>
+        <h3>Drop your resume here</h3>
+        <p>or click to browse files</p>
+        <div class="file-types">
+          <span class="badge">PDF</span>
+          <span class="badge">DOCX</span>
+          <span class="badge">TXT</span>
+        </div>
+      </div>
+
+      <div class="file-selected" id="fileSelected">
+        <span class="file-icon" id="fileTypeIcon">📄</span>
+        <div class="file-info">
+          <div class="file-name" id="fileName">—</div>
+          <div class="file-size" id="fileSize">—</div>
+        </div>
+        <button class="remove-btn" onclick="clearFile()" title="Remove">✕</button>
+      </div>
+
+      <button class="predict-btn" id="fileBtn" onclick="predictFile()" disabled>
+        🔍 Predict Category
+      </button>
+
+      <div class="loading" id="fileLoading">
+        <div class="spinner"></div>
+        Analyzing resume...
+      </div>
+      <div class="error-box" id="fileError"></div>
+      <div class="result" id="fileResult"></div>
+    </div>
+
+    <!-- TEXT TAB -->
+    <div id="tab-text" class="card" style="display:none">
+      <textarea id="textInput" placeholder="Paste your resume text here...&#10;&#10;Example: Python developer with 3 years experience in Django, REST APIs, data analysis, pandas, numpy..." oninput="onTextInput()"></textarea>
+
+      <button class="predict-btn" id="textBtn" onclick="predictText()" disabled>
+        🔍 Predict Category
+      </button>
+
+      <div class="loading" id="textLoading">
+        <div class="spinner"></div>
+        Analyzing text...
+      </div>
+      <div class="error-box" id="textError"></div>
+      <div class="result" id="textResult"></div>
+    </div>
+
+    <!-- CATEGORIES TAB -->
+    <div id="tab-categories" class="card" style="display:none">
+      <p style="color:#94a3b8; margin-bottom:4px;">The model can classify resumes into <strong style="color:#38bdf8">25 job categories</strong>:</p>
+      <div class="categories-grid" id="categoriesGrid">
+        <div style="color:#64748b">Loading...</div>
+      </div>
+    </div>
+
+    <footer>Built with FastAPI + Scikit-learn</footer>
+  </div>
+
+  <script>
+    const ICONS = {
+      pdf: '📕', docx: '📘', txt: '📝',
+      'Advocate':'⚖️','Arts':'🎨','Automation Testing':'🤖','Blockchain':'⛓️',
+      'Business Analyst':'📊','Civil Engineer':'🏗️','Data Science':'🔬',
+      'Database':'🗄️','DevOps Engineer':'⚙️','DotNet Developer':'💻',
+      'ETL Developer':'🔄','Electrical Engineering':'⚡','HR':'👥',
+      'Hadoop':'🐘','Health and fitness':'💪','Java Developer':'☕',
+      'Mechanical Engineer':'🔧','Network Security Engineer':'🛡️',
+      'Operations Manager':'📋','PMO':'📅','Python Developer':'🐍',
+      'SAP Developer':'🏢','Sales':'💼','Testing':'🧪','Web Designing':'🌐',
+    };
+
+    let selectedFile = null;
+
+    // ── Tabs ──────────────────────────────────────────────────────────────────
+    function switchTab(tab) {
+      ['file','text','categories'].forEach(t => {
+        document.getElementById('tab-' + t).style.display = t === tab ? 'block' : 'none';
+      });
+      document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', ['file','text','categories'][i] === tab);
+      });
+      if (tab === 'categories') loadCategories();
+    }
+
+    // ── File upload ───────────────────────────────────────────────────────────
+    function handleDrop(e) {
+      e.preventDefault();
+      document.getElementById('dropzone').classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file) setFile(file);
+    }
+
+    function onFileChange(input) {
+      if (input.files[0]) setFile(input.files[0]);
+    }
+
+    function setFile(file) {
+      selectedFile = file;
+      const ext = file.name.rsplit ? file.name.split('.').pop().toLowerCase() : file.name.split('.').pop().toLowerCase();
+      document.getElementById('fileTypeIcon').textContent = ICONS[ext] || '📄';
+      document.getElementById('fileName').textContent = file.name;
+      document.getElementById('fileSize').textContent = formatSize(file.size);
+      document.getElementById('fileSelected').classList.add('show');
+      document.getElementById('fileBtn').disabled = false;
+      hideAll('file');
+    }
+
+    function clearFile() {
+      selectedFile = null;
+      document.getElementById('fileInput').value = '';
+      document.getElementById('fileSelected').classList.remove('show');
+      document.getElementById('fileBtn').disabled = true;
+      hideAll('file');
+    }
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    // ── Text input ────────────────────────────────────────────────────────────
+    function onTextInput() {
+      const v = document.getElementById('textInput').value.trim();
+      document.getElementById('textBtn').disabled = v.length < 20;
+      hideAll('text');
+    }
+
+    // ── Predict file ──────────────────────────────────────────────────────────
+    async function predictFile() {
+      if (!selectedFile) return;
+      hideAll('file');
+      show('fileLoading');
+      document.getElementById('fileBtn').disabled = true;
+
+      const form = new FormData();
+      form.append('file', selectedFile);
+
+      try {
+        const res = await fetch('/predict/file', { method: 'POST', body: form });
+        const data = await res.json();
+        hide('fileLoading');
+        document.getElementById('fileBtn').disabled = false;
+        if (!res.ok) { showError('file', data.detail || 'Something went wrong'); return; }
+        showResult('file', data);
+      } catch (e) {
+        hide('fileLoading');
+        document.getElementById('fileBtn').disabled = false;
+        showError('file', 'Network error — server se connect nahi hua.');
+      }
+    }
+
+    // ── Predict text ──────────────────────────────────────────────────────────
+    async function predictText() {
+      const text = document.getElementById('textInput').value.trim();
+      if (!text) return;
+      hideAll('text');
+      show('textLoading');
+      document.getElementById('textBtn').disabled = true;
+
+      try {
+        const res = await fetch('/predict/text', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        const data = await res.json();
+        hide('textLoading');
+        document.getElementById('textBtn').disabled = false;
+        if (!res.ok) { showError('text', data.detail || 'Something went wrong'); return; }
+        showResult('text', data);
+      } catch (e) {
+        hide('textLoading');
+        document.getElementById('textBtn').disabled = false;
+        showError('text', 'Network error — server se connect nahi hua.');
+      }
+    }
+
+    // ── Categories ────────────────────────────────────────────────────────────
+    async function loadCategories() {
+      const grid = document.getElementById('categoriesGrid');
+      try {
+        const res  = await fetch('/categories');
+        const data = await res.json();
+        grid.innerHTML = data.categories
+          .map(c => `<span class="cat-chip">${ICONS[c] || '🏷️'} ${c}</span>`)
+          .join('');
+      } catch {
+        grid.innerHTML = '<span style="color:#f87171">Could not load categories.</span>';
+      }
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function show(id)  { document.getElementById(id).classList.add('show'); }
+    function hide(id)  { document.getElementById(id).classList.remove('show'); }
+    function hideAll(prefix) {
+      ['Loading','Error','Result'].forEach(s => hide(prefix + s));
+    }
+
+    function showError(prefix, msg) {
+      const el = document.getElementById(prefix + 'Error');
+      el.textContent = '⚠️ ' + msg;
+      el.classList.add('show');
+    }
+
+    function showResult(prefix, data) {
+      const cat  = data.predicted_category;
+      const icon = ICONS[cat] || '🏷️';
+      const el   = document.getElementById(prefix + 'Result');
+      el.innerHTML = `
+        <div class="result-header">
+          <span class="result-icon">${icon}</span>
+          <div>
+            <div class="result-label">Predicted Category</div>
+            <div class="result-category">${cat}</div>
+          </div>
+        </div>
+        ${data.preview ? `
+        <div class="preview-box">
+          <div class="preview-label">Extracted Text Preview</div>
+          <div class="preview-text">${escHtml(data.preview)}</div>
+        </div>` : ''}
+      `;
+      el.classList.add('show');
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+  </script>
+</body>
+</html>
