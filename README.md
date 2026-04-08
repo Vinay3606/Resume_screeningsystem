@@ -1,66 +1,100 @@
-# Resume Screening System
+🧾 Resume Screening System (SVM-Based)
+📋 Project Overview
 
-🧾 Resume Screening System using SVM  
+This project is a Resume Classification System that automatically categorizes resumes into different job roles using TF-IDF (Term Frequency–Inverse Document Frequency) and a Support Vector Machine (SVM) model.
 
-## 📋 Project Overview
-Resume classification system using **TF-IDF + SVM**, deployed with **FastAPI + Web UI**.
+The system is deployed using FastAPI for backend APIs and a user-friendly web interface for interaction.
+
+🖥️ Step 1: API Testing (Swagger UI)
+
+Swagger UI is used to test the API endpoints.
+
+It allows users to:
+
+Upload resumes directly
+Trigger the prediction API
+Validate responses in real time
+
+![Step1](assets/21.png) 
 
 ---
 
-## 🖥️ Step 1: API (Swagger UI)
-API endpoints ko test karne ke liye Swagger UI use hota hai.  
-Yaha se directly resume upload karke prediction check kar sakte ho.
+📊 Step 2: API Response
 
-![Step1](assets/21.png)
+The API returns:
 
----
+Predicted Job Category
+Extracted Resume Text (Preview)
 
-## 📊 Step 2: API Response
-API response me predicted category aur resume ka extracted preview text milta hai.
+This helps in verifying both the classification result and the text extraction process.
 
 ![Step2](assets/22.png)
 
 ---
 
-## 📤 Step 3: Upload Resume (UI)
-User-friendly UI jaha user resume upload kar sakta hai drag & drop ya browse karke.  
-- Supports **PDF, DOCX, TXT**
+📤 Step 3: Upload Resume (Web UI)
+
+A clean and user-friendly interface where users can upload resumes using:
+
+Drag & Drop
+File Browser
+
+Supported file formats:
+
+PDF
+DOCX
+TXT
 
 ![Step3](assets/23.png)
 
 ---
 
-## 🔍 Step 4: Prediction Result
-Predict button click karne ke baad model resume process karke category show karta hai.
+🔍 Step 4: Prediction Result
 
-- Predicted Category  
-- Extracted Resume Text  
+After clicking the Predict button:
+
+The system processes the resume
+Displays the predicted job category
+Shows the extracted resume content
+
+This provides transparency in how the model interprets the input.
 
 ![Step4](assets/24.png)
 
 ---
 
-## ✍️ Step 5: Paste Text Option
-User directly resume ka text paste karke bhi prediction le sakta hai.
+✍️ Step 5: Paste Text Option
 
-![Step5](assets/25.png)
+Users can also:
 
----
+Directly paste resume text
+Get instant predictions without uploading files
 
-## 📂 Step 6: All Categories
-System jitni job categories support karta hai wo yaha display hoti hain.
+This is useful for quick testing and debugging.
 
-![Step6](assets/26.png)
-
----
-
-## ⚙️ Tech Stack
-- FastAPI  
-- Scikit-learn (SVM)  
-- TF-IDF  
-- HTML, CSS  
+![Step5](assets/25.png) 
 
 ---
 
-## 🏁 Conclusion
-Efficient resume screening using **NLP + SVM**, reducing manual effort and improving hiring workflow.
+📂 Step 6: Supported Categories
+
+The system displays all supported job categories, giving users a clear idea of classification scope.
+
+![Step6](assets/26.png) 
+
+---
+
+⚙️ Tech Stack
+
+FastAPI – Backend API development
+Scikit-learn (SVM) – Machine learning model
+TF-IDF – Feature extraction technique
+HTML, CSS – Frontend interface
+
+🚀 Key Highlights
+
+End-to-end ML pipeline (text extraction → preprocessing → classification)
+Real-time prediction via API and UI
+Clean and intuitive user interface
+Supports multiple resume formats
+Easily extendable to more job categories
